@@ -1,5 +1,17 @@
 const { Kafka } = require('kafkajs');
 const mongoose = require('mongoose');
+const http = require('http');
+
+// 1. Create a lightweight HTTP server so Render's web router stays happy and wakes up instantly
+const PORT = process.env.PORT || 5000;
+const httpServer = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Kafka-DB Integrator Service is Running Successfully!\n');
+});
+
+httpServer.listen(PORT, () => {
+  console.log(`[HTTP Server] Health check server listening on port ${PORT}`);
+});
 
 // Environment variables configuration
 const KAFKA_BROKERS = process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'];
@@ -27,11 +39,11 @@ async function startService() {
   try {
     console.log('[Info] Initializing Kafka-DB Integration Service...');
 
-    // 1. Connect to Kafka Producer
+    // 2. Connect to Kafka Producer
     await producer.connect();
     console.log('[Kafka Success] Producer connected successfully to Aiven Kafka.');
 
-    // 2. Connect to Database (MongoDB Change Data Capture simulation)
+    // 3. Connect to Database (MongoDB Change Data Capture simulation)
     await mongoose.connect(MONGO_URI);
     console.log('[Database Success] Connected to MongoDB.');
 
@@ -47,7 +59,7 @@ async function startService() {
     const changeStream = db.collection(collectionName).watch();
     console.log(`[CDC Active] Listening for real-time changes on collection: "${collectionName}"...`);
 
-    // 3. Listen to Database Changes and Stream to Kafka
+    // 4. Listen to Database Changes and Stream to Kafka
     changeStream.on('change', async (change) => {
       try {
         const eventPayload = {
@@ -84,6 +96,7 @@ process.on('SIGINT', async () => {
   console.log('\n[Info] Shutting down service gracefully...');
   await producer.disconnect();
   await mongoose.connection.close();
+  httpServer.close();
   process.exit(0);
 });
 
