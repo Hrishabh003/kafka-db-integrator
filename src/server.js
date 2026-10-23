@@ -2,7 +2,7 @@ const { Kafka } = require('kafkajs');
 const mongoose = require('mongoose');
 const http = require('http');
 
-// 1. Create a lightweight HTTP server so Render's web router stays happy and wakes up instantly
+// 1. Create a lightweight HTTP server for Render health checks
 const PORT = process.env.PORT || 5000;
 const httpServer = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -13,11 +13,15 @@ httpServer.listen(PORT, () => {
   console.log(`[HTTP Server] Health check server listening on port ${PORT}`);
 });
 
-// Environment variables configuration
+// Environment variables configuration & Diagnostics
 const KAFKA_BROKERS = process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'];
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/integration_db';
 const KAFKA_USERNAME = process.env.KAFKA_USERNAME || 'avnadmin';
 const KAFKA_PASSWORD = process.env.KAFKA_PASSWORD || '';
+
+// Diagnostic log to verify if Render is injecting the variables
+console.log(`[Env Check] KAFKA_USERNAME is: "${KAFKA_USERNAME}"`);
+console.log(`[Env Check] KAFKA_PASSWORD is set: ${KAFKA_PASSWORD ? 'YES (Length: ' + KAFKA_PASSWORD.length + ')' : 'NO / EMPTY'}`);
 
 // Initialize Kafka Client & Producer with SSL & SASL for Aiven
 const kafka = new Kafka({
