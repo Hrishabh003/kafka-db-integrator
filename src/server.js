@@ -4,11 +4,21 @@ const mongoose = require('mongoose');
 // Environment variables configuration
 const KAFKA_BROKERS = process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'];
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/integration_db';
+const KAFKA_USERNAME = process.env.KAFKA_USERNAME || 'avnadmin';
+const KAFKA_PASSWORD = process.env.KAFKA_PASSWORD || '';
 
-// Initialize Kafka Client & Producer
+// Initialize Kafka Client & Producer with SSL & SASL for Aiven
 const kafka = new Kafka({
   clientId: 'kafka-db-integrator',
   brokers: KAFKA_BROKERS,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+  sasl: {
+    mechanism: 'scram-sha-256',
+    username: KAFKA_USERNAME,
+    password: KAFKA_PASSWORD,
+  }
 });
 
 const producer = kafka.producer();
@@ -19,7 +29,7 @@ async function startService() {
 
     // 1. Connect to Kafka Producer
     await producer.connect();
-    console.log('[Kafka Success] Producer connected successfully.');
+    console.log('[Kafka Success] Producer connected successfully to Aiven Kafka.');
 
     // 2. Connect to Database (MongoDB Change Data Capture simulation)
     await mongoose.connect(MONGO_URI);
