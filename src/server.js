@@ -24,6 +24,7 @@ console.log(`[Env Check] KAFKA_USERNAME is: "${KAFKA_USERNAME}"`);
 console.log(`[Env Check] KAFKA_PASSWORD is set: ${KAFKA_PASSWORD ? 'YES (Length: ' + KAFKA_PASSWORD.length + ')' : 'NO / EMPTY'}`);
 
 // Initialize Kafka Client & Producer with SSL & SASL for Aiven
+// Initialize Kafka Client & Producer with SSL & SASL for Aiven
 const kafka = new Kafka({
   clientId: 'kafka-db-integrator',
   brokers: KAFKA_BROKERS,
@@ -31,11 +32,12 @@ const kafka = new Kafka({
     rejectUnauthorized: false,
   },
   sasl: {
-    mechanism: 'scram-sha-256',
+    mechanism: 'plain', // Switched to plain for reliable Aiven authentication compatibility
     username: KAFKA_USERNAME,
     password: KAFKA_PASSWORD,
   }
 });
+
 
 const producer = kafka.producer();
 
