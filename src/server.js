@@ -40,11 +40,23 @@ const kafkaSasl = KAFKA_USERNAME && KAFKA_PASSWORD
   : undefined;
 
 // Initialize Kafka Client & Producer with certificate-verified TLS.
+const fs = require('fs');
+const { Kafka } = require('kafkajs');
+
 const kafka = new Kafka({
   clientId: 'kafka-db-integrator',
-  brokers: KAFKA_BROKERS,
-  ssl: true,
-  ...(kafkaSasl ? { sasl: kafkaSasl } : {}),
+  brokers: [process.env.KAFKA_BROKER], // kafka-...aivencloud.com:10636
+  ssl: {
+    ca: [fs.readFileSync('/etc/secrets/ca.pem', 'utf-8')],
+    // or, if using an env var:
+    // ca: [process.env.KAFKA_CA_CERT],
+  },
+  // Only if your Aiven service uses SASL (check the connection info):
+  // sasl: {
+  //   mechanism: 'scram-sha-256',
+  //   username: process.env.KAFKA_USERNAME,
+  //   password: process.env.KAFKA_PASSWORD,
+  // },
 });
 
 const producer = kafka.producer();
