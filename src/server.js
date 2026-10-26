@@ -41,7 +41,6 @@ const kafkaSasl = KAFKA_USERNAME && KAFKA_PASSWORD
 
 // Initialize Kafka Client & Producer with certificate-verified TLS.
 const fs = require('fs');
-const { Kafka } = require('kafkajs');
 
 const kafka = new Kafka({
   clientId: 'kafka-db-integrator',
