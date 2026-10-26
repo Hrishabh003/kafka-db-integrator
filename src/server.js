@@ -1,4 +1,3 @@
-Server · JS
 const { Kafka } = require('kafkajs');
 const mongoose = require('mongoose');
 const http = require('http');
